@@ -707,16 +707,7 @@
             <h2>Want to Go Deeper?</h2>
             <p>Unlock <strong>combined Personal + SMSF modelling</strong> to see both streams working together. Enter your email and we'll be in touch with next steps.</p>
 
-            <form id="ctaForm" class="cta-form" name="wealth-calculator" method="POST" data-netlify="true" netlify-honeypot="bot-field" onsubmit="handleFormSubmit(event)">
-                <input type="hidden" name="form-name" value="wealth-calculator">
-                <p style="display:none;"><input name="bot-field"></p>
-                <!-- Hidden fields for calculator data -->
-                <input type="hidden" name="property-value" id="hiddenPropValue">
-                <input type="hidden" name="household-income" id="hiddenIncome">
-                <input type="hidden" name="total-wealth" id="hiddenWealth">
-                <input type="hidden" name="stage-reached" id="hiddenStage">
-                <input type="hidden" name="properties-count" id="hiddenProps">
-                <input type="hidden" name="structure" id="hiddenStructure">
+            <form id="ctaForm" class="cta-form" onsubmit="handleFormSubmit(event)">
                 <input type="email" name="email" placeholder="Enter your email" required>
                 <button type="submit">Unlock Full Model</button>
             </form>
@@ -1284,23 +1275,36 @@ function renderYearTable(data) {
 function handleFormSubmit(e) {
     e.preventDefault();
     const form = e.target;
-    const formData = new FormData(form);
+    const email = form.querySelector('[name="email"]').value;
 
-    fetch('/', {
+    // Gather calculator state
+    const payload = {
+        email: email,
+        propertyValue: $('propValue') ? $('propValue').value : '',
+        householdIncome: $('income') ? $('income').value : '',
+        totalWealth: document.querySelector('.wealth-amount') ? document.querySelector('.wealth-amount').textContent : '',
+        stageReached: document.querySelector('.stage-name') ? document.querySelector('.stage-name').textContent : '',
+        propertiesCount: document.querySelector('.properties-count') ? document.querySelector('.properties-count').textContent : '',
+        structure: document.querySelector('input[name="structure"]:checked') ? document.querySelector('input[name="structure"]:checked').value : ''
+    };
+
+    // Send to Google Sheets
+    fetch('https://script.google.com/macros/s/AKfycbxcPfwLbjFAGY7UUscK9bGIrDYJenqvtTHfScm2JzBZU2bn7dmNXZgEMI8Xs5uNrDn49w/exec', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData).toString()
-    })
-    .then(() => {
-        form.style.display = 'none';
-        $('ctaThankYou').style.display = 'block';
-        unlockBothMode();
-    })
-    .catch(() => {
-        form.style.display = 'none';
-        $('ctaThankYou').style.display = 'block';
-        unlockBothMode();
-    });
+        body: JSON.stringify(payload)
+    }).catch(() => {});
+
+    // Send to WP as lead post
+    fetch('https://healthywealthyinvestor.com.au/wp-json/hwi/v1/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(() => {});
+
+    // Unlock immediately (don't wait for network)
+    form.style.display = 'none';
+    $('ctaThankYou').style.display = 'block';
+    unlockBothMode();
 }
 </script>
 </body>
