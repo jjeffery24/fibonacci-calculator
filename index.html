@@ -43,21 +43,22 @@
             background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
             border-radius: 16px;
             border: 1px solid var(--card-border);
-            border-bottom: 2px solid var(--gold);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
         .header::before {
             content: "";
             position: absolute;
-            bottom: -2rem;
-            right: -1rem;
-            width: 12rem;
-            height: 12rem;
+            top: 50%;
+            right: 1.5rem;
+            width: 10rem;
+            height: 10rem;
+            transform: translateY(-50%);
             background-image: url("logo.png");
             background-size: contain;
             background-repeat: no-repeat;
             opacity: 0.08;
+            pointer-events: none;
         }
         .header-logo {
             width: 56px;
@@ -419,7 +420,6 @@
         .cta-section {
             background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
             border: 1px solid var(--card-border);
-            border-bottom: 2px solid var(--gold);
             border-radius: 16px;
             padding: 40px 32px;
             text-align: center;
@@ -503,7 +503,7 @@
             text-align: center;
             padding: 32px 20px;
             margin-top: 40px;
-            border-top: 2px solid var(--gold);
+            border-top: 1px solid var(--card-border);
             color: var(--text-dim);
             font-size: 0.75rem;
         }
