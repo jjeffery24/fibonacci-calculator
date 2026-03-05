@@ -47,14 +47,22 @@
             overflow: hidden;
         }
         .header::before {
-            content: "\03C6";
+            content: "";
             position: absolute;
             top: -20px;
             right: 20px;
-            font-size: 8rem;
-            color: var(--gold);
-            opacity: 0.05;
-            font-weight: 700;
+            width: 8rem;
+            height: 8rem;
+            background-image: url("https://healthywealthyinvestor.com.au/wp-content/uploads/2026/03/logo_v5_1024.png");
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.12;
+        }
+        .header-logo {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            filter: drop-shadow(0 0 8px rgba(232, 191, 90, 0.3));
         }
         .header h1 {
             font-size: 2rem;
@@ -519,6 +527,7 @@
 
     <!-- Header -->
     <div class="header">
+        <img src="https://healthywealthyinvestor.com.au/wp-content/uploads/2026/03/logo_v5_1024.png" alt="HWI" class="header-logo">
         <h1>Wealth Path Calculator</h1>
         <div class="subtitle">See Your Property Investment Future</div>
         <div class="powered-by">Powered by Healthy Wealthy Investor</div>
@@ -723,7 +732,7 @@
 
     <!-- Footer -->
     <div class="footer">
-        <div class="brand">Healthy Wealthy Investor</div>
+        <div class="brand"><img src="https://healthywealthyinvestor.com.au/wp-content/uploads/2026/03/logo_v5_1024.png" alt="HWI" style="width:28px;height:28px;vertical-align:middle;margin-right:8px;filter:drop-shadow(0 0 4px rgba(232,191,90,0.3))">Healthy Wealthy Investor</div>
         <div>AeFin | Credit Representative 464548</div>
         <div style="margin-top: 4px;"><a href="https://healthywealthyinvestor.com.au" target="_blank">healthywealthyinvestor.com.au</a></div>
         <div class="disclaimer">
