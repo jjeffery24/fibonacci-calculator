@@ -920,7 +920,7 @@ async function runModel() {
     $('loadingOverlay').classList.add('active');
 
     try {
-        const res = await fetch('/.netlify/functions/simulate', {
+        const res = await fetch('https://hwi-wealth-calculator.netlify.app/.netlify/functions/simulate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -1189,7 +1189,7 @@ function handleFormSubmit(e) {
     };
 
     // Send via serverless proxy (endpoints hidden server-side)
-    fetch('/.netlify/functions/submit-lead', {
+    fetch('https://hwi-wealth-calculator.netlify.app/.netlify/functions/submit-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

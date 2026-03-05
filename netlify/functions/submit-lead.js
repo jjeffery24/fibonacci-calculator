@@ -7,6 +7,7 @@ const ALLOWED_ORIGINS = [
   'https://hwi-wealth-calculator.netlify.app',
   'https://healthywealthyinvestor.com.au',
   'https://www.healthywealthyinvestor.com.au',
+  'https://jjeffery24.github.io',
   'http://localhost:8888',
   'http://localhost:3000',
 ];
