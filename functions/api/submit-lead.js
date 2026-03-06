@@ -5,7 +5,6 @@ const ALLOWED_ORIGINS = [
   'https://hwi-wealth-calculator.pages.dev',
   'https://healthywealthyinvestor.com.au',
   'https://www.healthywealthyinvestor.com.au',
-  'https://jjeffery24.github.io',
   'http://localhost:8788',
   'http://localhost:3000',
 ];
