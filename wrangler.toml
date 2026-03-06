@@ -1,0 +1,7 @@
+name = "hwi-wealth-calculator"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "public"
+
+[vars]
+# Secrets set via: wrangler pages secret put GOOGLE_SHEETS_WEBHOOK
+# Secrets set via: wrangler pages secret put WP_LEAD_ENDPOINT

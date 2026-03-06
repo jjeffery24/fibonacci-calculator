@@ -1,0 +1,1206 @@
+<!--
+  ╔═══════════════════════════════════════════════════════════════╗
+  ║  Wealth Path Calculator                                       ║
+  ║  © 2026 Healthy Wealthy Investor — All Rights Reserved        ║
+  ║  healthywealthyinvestor.com.au                                ║
+  ║                                                               ║
+  ║  This software is proprietary. Unauthorised copying,          ║
+  ║  reproduction, or distribution of this code, in whole or      ║
+  ║  in part, is strictly prohibited.                             ║
+  ║                                                               ║
+  ║  Protected under Australian Copyright Act 1968.               ║
+  ╚═══════════════════════════════════════════════════════════════╝
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wealth Path Calculator — See Your Property Investment Future</title>
+    <meta name="description" content="Free property wealth calculator. Model your 35-year investment trajectory using Fibonacci stage progression. See how property investment builds long-term wealth.">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold-light: #E8BF5A;
+            --gold-dark: #B8924A;
+            --navy: #1a1a2e;
+            --navy-light: #252545;
+            --slate: #334155;
+            --bg: #1a1a2e;
+            --card: #22223a;
+            --card-border: #333355;
+            --text: #E2E8F0;
+            --text-dim: #94A3B8;
+            --green: #22C55E;
+            --red: #EF4444;
+            --amber: #F59E0B;
+            --blue: #3B82F6;
+            --purple: #8B5CF6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+        input, select, textarea { -webkit-user-select: text; -moz-user-select: text; user-select: text; }
+        .container { max-width: 960px; margin: 0 auto; }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 40px 30px;
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            position: relative;
+            overflow: visible;
+        }
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 1.5rem;
+            width: 10rem;
+            height: 10rem;
+            transform: translateY(-50%);
+            background-image: url("logo.png");
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.08;
+            pointer-events: none;
+        }
+        .header-logo {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            filter: drop-shadow(0 0 8px rgba(232, 191, 90, 0.3));
+        }
+        .header h1 {
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .header .subtitle {
+            color: var(--text-dim);
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        .header .powered-by {
+            color: var(--gold-dark);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        /* How This Works */
+        .explainer {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            line-height: 1.7;
+        }
+        .explainer h2 {
+            color: var(--gold);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        /* Stage Indicator */
+        .stage-indicator {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: var(--card);
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+        .stage-pill {
+            flex: 1;
+            padding: 10px 6px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--slate);
+            color: var(--text-dim);
+            transition: all 0.3s ease;
+        }
+        .stage-pill.active {
+            background: var(--gold);
+            color: var(--bg);
+            box-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
+        }
+        .stage-pill.passed {
+            background: var(--gold-dark);
+            color: var(--bg);
+            opacity: 0.7;
+        }
+        .stage-pill .multiplier {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+        .stage-pill .stage-name {
+            display: block;
+            font-size: 0.55rem;
+            margin-top: 2px;
+            opacity: 0.8;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 20px;
+        }
+        .card h3 {
+            color: var(--gold);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .input-group { margin-bottom: 14px; }
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2);
+        }
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media (max-width: 600px) {
+            .input-row { grid-template-columns: 1fr; }
+        }
+
+        /* Structure selector (radio-style buttons) */
+        .structure-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .structure-selector label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .structure-options {
+            display: flex;
+            gap: 0;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--card-border);
+        }
+        .structure-options input { display: none; }
+        .structure-opt {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dim);
+            background: var(--bg);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-right: 1px solid var(--card-border);
+        }
+        .structure-opt:last-child { border-right: none; }
+        .structure-opt:hover { color: var(--text); background: var(--slate); }
+        .structure-options input:checked + .structure-opt {
+            background: var(--gold-dark);
+            color: var(--bg);
+        }
+        .structure-opt.locked {
+            opacity: 0.45;
+            cursor: default;
+            position: relative;
+        }
+        .structure-opt.locked::after {
+            content: " \01F512";
+            font-size: 0.7rem;
+        }
+        .structure-opt.locked.unlocked {
+            opacity: 1;
+            cursor: pointer;
+        }
+        .structure-opt.locked.unlocked::after {
+            content: "";
+        }
+
+        /* Advanced toggle section */
+        .advanced-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+        .advanced-toggle-btn:hover {
+            border-color: var(--gold-dark);
+            color: var(--gold-light);
+        }
+        .advanced-toggle-btn .arrow {
+            transition: transform 0.3s;
+            font-size: 0.7rem;
+        }
+        .advanced-toggle-btn.open .arrow {
+            transform: rotate(90deg);
+        }
+        .advanced-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+        .advanced-panel.open {
+            max-height: 600px;
+            opacity: 1;
+        }
+
+        /* Button */
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: var(--bg);
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(201, 168, 76, 0.35);
+        }
+        .btn-primary:active { transform: translateY(0); }
+
+        /* Results section */
+        #resultsSection { display: none; }
+        #resultsSection.visible { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 700px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        .kpi {
+            background: var(--card);
+            padding: 18px 14px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--card-border);
+        }
+        .kpi .value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+        .kpi .label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* Chart */
+        .chart-card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 20px;
+        }
+        .chart-card h3 {
+            color: var(--gold);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .chart-container { position: relative; height: 380px; }
+
+        /* Year-by-year table */
+        .table-toggle-btn {
+            background: none;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 10px 16px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .table-toggle-btn:hover { border-color: var(--gold-dark); color: var(--gold-light); }
+        .table-toggle-btn .arrow { transition: transform 0.3s; font-size: 0.7rem; }
+        .table-toggle-btn.open .arrow { transform: rotate(90deg); }
+        .table-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .table-panel.open { max-height: 2000px; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        .data-table th {
+            background: var(--bg);
+            color: var(--gold);
+            padding: 10px 8px;
+            text-align: right;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.65rem;
+            position: sticky;
+            top: 0;
+        }
+        .data-table th:first-child { text-align: center; }
+        .data-table td {
+            padding: 8px;
+            text-align: right;
+            border-bottom: 1px solid var(--card-border);
+            color: var(--text-dim);
+        }
+        .data-table td:first-child { text-align: center; color: var(--text); font-weight: 600; }
+        .data-table tr.stage-transition { border-top: 2px solid var(--gold-dark); }
+        .data-table tr.stage-transition td:first-child { color: var(--gold); }
+        .table-scroll { max-height: 450px; overflow-y: auto; border-radius: 8px; }
+
+        /* Email capture CTA */
+        .cta-section {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 40px 32px;
+            text-align: center;
+            margin: 32px 0;
+        }
+        .cta-section h2 {
+            color: var(--gold);
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+        .cta-section p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-form {
+            display: flex;
+            gap: 12px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        @media (max-width: 600px) {
+            .cta-form { flex-direction: column; }
+        }
+        .cta-form input[type="email"] {
+            flex: 1;
+            padding: 14px 16px;
+            background: var(--bg);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 1rem;
+        }
+        .cta-form input[type="email"]:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2);
+        }
+        .cta-form button {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: var(--bg);
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .cta-form button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(201, 168, 76, 0.3);
+        }
+        .cta-thank-you {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .cta-thank-you h3 {
+            color: var(--green);
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+        .cta-thank-you p {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+        .cta-thank-you a {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .cta-thank-you a:hover { text-decoration: underline; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 32px 20px;
+            margin-top: 40px;
+            border-top: 1px solid var(--card-border);
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+        .footer a { color: var(--gold); text-decoration: none; transition: color 0.2s ease; }
+        .footer a:hover { color: var(--gold-light); }
+        .footer .brand {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gold);
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .footer .brand img {
+            transition: filter 0.2s ease, transform 0.2s ease;
+        }
+        .footer .brand img:hover {
+            filter: brightness(1.2) drop-shadow(0 0 6px rgba(232, 191, 90, 0.5));
+            transform: scale(1.05);
+        }
+        .footer .disclaimer {
+            max-width: 600px;
+            margin: 12px auto 0;
+            font-size: 0.65rem;
+            line-height: 1.5;
+        }
+        /* Loading overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(26,26,46,0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .loading-overlay.active { display: flex; }
+        .loading-spinner {
+            width: 48px; height: 48px;
+            border: 4px solid var(--card-border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: var(--gold); font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Running simulation...</div>
+</div>
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <img src="logo.png" alt="HWI" class="header-logo">
+        <h1>Wealth Path Calculator</h1>
+        <div class="subtitle">See Your Property Investment Future</div>
+        <div class="powered-by">Powered by Healthy Wealthy Investor</div>
+    </div>
+
+    <!-- How This Works -->
+    <div class="explainer">
+        <h2>How This Works</h2>
+        <p>
+            This calculator models your property wealth trajectory using <strong>Fibonacci stage progression</strong> &mdash; the same mathematical ratios found in nature's most efficient growth systems. Your wealth-to-income ratio determines your stage: from Seed (just starting) through to Freedom (passive income replaces employment). Each stage compounds faster than the last. Enter your numbers below and see the path forward.
+        </p>
+    </div>
+
+    <!-- Stage Indicator -->
+    <div class="stage-indicator" id="stageIndicator">
+        <div class="stage-pill" data-stage="1"><span class="multiplier">&times;1</span>Stage 1<span class="stage-name">Seed</span></div>
+        <div class="stage-pill" data-stage="2"><span class="multiplier">&times;3</span>Stage 2<span class="stage-name">Growth</span></div>
+        <div class="stage-pill" data-stage="3"><span class="multiplier">&times;5</span>Stage 3<span class="stage-name">Momentum</span></div>
+        <div class="stage-pill" data-stage="4"><span class="multiplier">&times;8</span>Stage 4<span class="stage-name">Compound</span></div>
+        <div class="stage-pill" data-stage="5"><span class="multiplier">&times;13</span>Stage 5<span class="stage-name">Freedom</span></div>
+    </div>
+
+    <!-- Input Section -->
+    <div class="card">
+        <h3>Your Details</h3>
+
+        <!-- Core Inputs (always visible) -->
+        <div class="input-row">
+            <div class="input-group">
+                <label>Property Value ($)</label>
+                <input type="number" id="propertyValue" value="850000" min="200000" max="3000000" step="10000">
+            </div>
+            <div class="input-group">
+                <label>Deposit Available ($)</label>
+                <input type="number" id="depositAvailable" value="170000" min="0" step="5000">
+            </div>
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Household Income ($ gross annual)</label>
+                <input type="number" id="householdIncome" value="150000" min="30000" step="5000">
+            </div>
+            <div class="input-group">
+                <label>Current Age</label>
+                <input type="number" id="currentAge" value="40" min="18" max="70">
+            </div>
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Expected Growth Rate (% pa)</label>
+                <input type="number" id="growthRate" value="6.0" min="1" max="15" step="0.5">
+            </div>
+            <div class="input-group">
+                <label>Rental Yield (% pa)</label>
+                <input type="number" id="rentalYield" value="5.5" min="2" max="12" step="0.1">
+            </div>
+        </div>
+        <button type="button" onclick="applyMarketDefaults()" style="background:none; border:1px solid var(--card-border); border-radius:8px; padding:8px 14px; color:var(--text-dim); font-size:0.75rem; cursor:pointer; margin-bottom:14px; transition:all 0.2s; width:100%; text-align:center;" onmouseover="this.style.borderColor='var(--gold-dark)';this.style.color='var(--gold-light)';" onmouseout="this.style.borderColor='var(--card-border)';this.style.color='var(--text-dim)';">
+            Use Current Market Rates (RBA cash rate 4.10% &mdash; Mar 2026)
+        </button>
+
+        <!-- Advanced Toggle -->
+        <button class="advanced-toggle-btn" id="advancedBtn" onclick="toggleAdvanced()">
+            <span class="arrow">&#9654;</span> Advanced Options
+        </button>
+
+        <div class="advanced-panel" id="advancedPanel">
+            <div class="structure-selector">
+                <div style="width:100%;">
+                    <label>Investment Structure</label>
+                    <div class="structure-options">
+                        <input type="radio" name="structure" id="structPersonal" value="personal" checked onchange="onStructureChange()">
+                        <label for="structPersonal" class="structure-opt">Personal</label>
+                        <input type="radio" name="structure" id="structSmsf" value="smsf" onchange="onStructureChange()">
+                        <label for="structSmsf" class="structure-opt">SMSF</label>
+                        <input type="radio" name="structure" id="structBoth" value="both" onchange="onStructureChange()" disabled>
+                        <label for="structBoth" class="structure-opt locked" id="bothLabel">Both</label>
+                    </div>
+                    <div id="bothHint" style="font-size:0.7rem; color:var(--text-dim); margin-top:6px; text-align:center; opacity:0.7;">
+                        Combined Personal + SMSF modelling unlocked after saving your report below
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Loan Interest Rate (% pa)</label>
+                    <input type="number" id="loanRate" value="7.0" min="2" max="12" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Number of Properties (1-5)</label>
+                    <input type="number" id="maxProperties" value="2" min="1" max="5" step="1">
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Build Period (months, 0 = existing)</label>
+                    <input type="number" id="buildPeriod" value="0" min="0" max="24" step="1">
+                </div>
+                <div class="input-group">
+                    <label>Savings Rate (%)</label>
+                    <input type="number" id="savingsRate" value="20" min="5" max="60" step="1">
+                </div>
+            </div>
+
+            <div id="smsfFields" style="display:none;">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Current Super Balance ($)</label>
+                        <input type="number" id="superBalance" value="250000" min="0" step="10000">
+                    </div>
+                    <div class="input-group">
+                        <label>Salary Sacrifice to Super ($/yr)</label>
+                        <input type="number" id="salSac" value="5000" min="0" max="30000" step="1000">
+                    </div>
+                </div>
+            </div>
+
+            <div id="bothFields" style="display:none;">
+                <div style="font-size:0.75rem; color:var(--gold-dark); margin:8px 0 12px; padding:10px; background:rgba(201,168,76,0.06); border-radius:8px; border:1px solid rgba(201,168,76,0.15);">
+                    Combined mode: Personal properties use your savings. SMSF properties use your super balance. Both streams run in parallel.
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Current Super Balance ($)</label>
+                        <input type="number" id="superBalanceBoth" value="250000" min="0" step="10000">
+                    </div>
+                    <div class="input-group">
+                        <label>Salary Sacrifice to Super ($/yr)</label>
+                        <input type="number" id="salSacBoth" value="5000" min="0" max="30000" step="1000">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Personal Properties (max)</label>
+                        <input type="number" id="maxPropsPersonal" value="2" min="1" max="5" step="1">
+                    </div>
+                    <div class="input-group">
+                        <label>SMSF Properties (max)</label>
+                        <input type="number" id="maxPropsSmsf" value="2" min="1" max="5" step="1">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculate Button -->
+    <button class="btn-primary" onclick="runModel()">CALCULATE MY WEALTH PATH</button>
+
+    <!-- Results Section (shown after calculation) -->
+    <div id="resultsSection">
+
+        <!-- KPI Strip -->
+        <div class="kpi-grid">
+            <div class="kpi"><div class="value" id="kpiPortfolio">-</div><div class="label">Portfolio Value</div></div>
+            <div class="kpi"><div class="value" id="kpiEquity">-</div><div class="label">Total Equity Built</div></div>
+            <div class="kpi"><div class="value" id="kpiIncome">-</div><div class="label">Passive Income / yr</div></div>
+            <div class="kpi"><div class="value" id="kpiProperties">-</div><div class="label">Properties Owned</div></div>
+        </div>
+
+        <!-- Wealth Trajectory Chart -->
+        <div class="chart-card">
+            <h3>Your Equity Growth Trajectory</h3>
+            <div class="chart-container"><canvas id="wealthChart"></canvas></div>
+        </div>
+
+        <!-- Stage Progression Chart -->
+        <div class="chart-card">
+            <h3>Fibonacci Stage Progression</h3>
+            <div class="chart-container" style="height:300px;"><canvas id="stageChart"></canvas></div>
+        </div>
+
+        <!-- Year-by-Year Table (collapsible) -->
+        <div class="chart-card">
+            <button class="table-toggle-btn" id="tableBtn" onclick="toggleTable()">
+                <span class="arrow">&#9654;</span> Year-by-Year Projection
+            </button>
+            <div class="table-panel" id="tablePanel">
+                <div class="table-scroll" id="yearTable"></div>
+            </div>
+        </div>
+
+        <!-- Email Capture CTA -->
+        <div class="cta-section" id="ctaSection">
+            <h2>Want to Go Deeper?</h2>
+            <p>Unlock <strong>combined Personal + SMSF modelling</strong> to see both streams working together. Enter your email and we'll be in touch with next steps.</p>
+
+            <form id="ctaForm" class="cta-form" onsubmit="handleFormSubmit(event)">
+                <input type="email" name="email" placeholder="Enter your email" required>
+                <button type="submit">Unlock Full Model</button>
+            </form>
+
+            <div class="cta-thank-you" id="ctaThankYou">
+                <h3>Combined mode unlocked.</h3>
+                <p>You can now model Personal + SMSF together using the structure selector above.<br>
+                Ready to map your strategy? <a href="https://AeFin.as.me/?appointmentType=82455490" target="_blank">Book a free discovery call</a></p>
+            </div>
+        </div>
+
+    </div><!-- /resultsSection -->
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="brand"><img src="logo.png" alt="HWI" style="width:28px;height:28px;vertical-align:middle;margin-right:8px;filter:drop-shadow(0 0 4px rgba(232,191,90,0.3))">Healthy Wealthy Investor</div>
+        <div>AeFin | Credit Representative 464548</div>
+        <div style="margin-top: 4px;"><a href="https://healthywealthyinvestor.com.au" target="_blank">healthywealthyinvestor.com.au</a></div>
+        <div class="disclaimer">
+            This calculator provides general estimates only and does not constitute financial advice.
+            Projections are based on the assumptions you enter and may not reflect actual future outcomes.
+            Property values, interest rates, rental yields, and growth rates are subject to market conditions.
+            Always seek independent financial advice before making investment decisions.
+            Australian Credit Licence held by Finsure Group (ACL 384704).
+        </div>
+        <div style="margin-top:8px;font-size:0.7rem;color:#555;letter-spacing:0.02em;">© 2026 Healthy Wealthy Investor. All rights reserved.</div>
+    </div>
+
+</div>
+
+<script>
+// ============================================================
+// © 2026 Healthy Wealthy Investor — All Rights Reserved
+// healthywealthyinvestor.com.au
+// Protected under Australian Copyright Act 1968.
+// Unauthorised reproduction or distribution prohibited.
+// ============================================================
+
+// Anti-inspect deterrents
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+document.addEventListener('keydown', function(e) {
+    // Block Ctrl/Cmd+U (view source), Ctrl/Cmd+Shift+I (devtools), Ctrl/Cmd+Shift+J (console), F12
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u') e.preventDefault();
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i')) e.preventDefault();
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j')) e.preventDefault();
+    if (e.key === 'F12') e.preventDefault();
+});
+
+// Console warning
+console.log('%c⚠ STOP', 'color:#EF4444;font-size:32px;font-weight:bold');
+console.log('%c© 2026 Healthy Wealthy Investor. This code is proprietary.\nUnauthorised copying is prohibited under Australian Copyright Act 1968.', 'color:#c9a84c;font-size:14px');
+
+// ============================================================
+
+const STAGE_NAMES = ['Seed', 'Growth', 'Momentum', 'Compound', 'Freedom'];
+
+let wealthChart = null;
+let stageChart = null;
+
+function $(id) { return document.getElementById(id); }
+function val(id) { return parseFloat($(id).value) || 0; }
+function fmt(n) { return '$' + Math.round(n).toLocaleString(); }
+function fmtK(n) {
+    if (n === 0) return '$0';
+    if (Math.abs(n) < 1000) return '$' + Math.round(n).toLocaleString();
+    if (Math.abs(n) >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
+    return '$' + Math.round(n / 1000).toLocaleString() + 'K';
+}
+
+// Toggle functions
+function toggleAdvanced() {
+    const btn = $('advancedBtn');
+    const panel = $('advancedPanel');
+    btn.classList.toggle('open');
+    panel.classList.toggle('open');
+}
+
+function toggleTable() {
+    const btn = $('tableBtn');
+    const panel = $('tablePanel');
+    btn.classList.toggle('open');
+    panel.classList.toggle('open');
+}
+
+function getStructure() {
+    if ($('structBoth').checked) return 'both';
+    if ($('structSmsf').checked) return 'smsf';
+    return 'personal';
+}
+
+function onStructureChange() {
+    const mode = getStructure();
+    $('smsfFields').style.display = (mode === 'smsf') ? 'block' : 'none';
+    $('bothFields').style.display = (mode === 'both') ? 'block' : 'none';
+    // Hide maxProperties row when in 'both' mode (separate controls shown)
+}
+
+// RBA-derived market defaults (Mar 2026: cash rate 4.10%)
+function applyMarketDefaults() {
+    // Interest rate: cash rate (4.10%) + average lender margin (~2.5%) = 6.60%
+    $('loanRate').value = '6.6';
+    // Capital growth: 10yr national average ~6%
+    $('growthRate').value = '6.0';
+    // Rental yield: national average ~4.5-5.5%, use 5.0% as midpoint
+    $('rentalYield').value = '5.0';
+    // Open advanced if not already open so user sees the rate applied
+    if (!$('advancedPanel').classList.contains('open')) toggleAdvanced();
+    // Brief flash to show fields updated
+    ['loanRate', 'growthRate', 'rentalYield'].forEach(id => {
+        $(id).style.borderColor = 'var(--gold)';
+        setTimeout(() => { $(id).style.borderColor = ''; }, 1500);
+    });
+}
+
+function unlockBothMode() {
+    $('structBoth').disabled = false;
+    $('bothLabel').classList.add('unlocked');
+    $('bothHint').innerHTML = '<span style="color:var(--green);">Combined modelling unlocked. Select "Both" to model Personal + SMSF together.</span>';
+}
+
+// ============================================================
+// SIMULATION — calls serverless function
+// ============================================================
+
+async function runModel() {
+    const mode = getStructure();
+    const annualGross = val('householdIncome');
+
+    const payload = {
+        currentAge: val('currentAge'),
+        householdIncome: annualGross,
+        propertyPrice: val('propertyValue'),
+        depositAvailable: val('depositAvailable'),
+        growthRate: val('growthRate'),
+        rentalYield: val('rentalYield'),
+        loanRate: val('loanRate'),
+        buildPeriod: val('buildPeriod'),
+        savingsRate: val('savingsRate'),
+        structure: mode,
+        maxProperties: val('maxProperties'),
+        maxPropsPersonal: val('maxPropsPersonal'),
+        maxPropsSmsf: val('maxPropsSmsf'),
+        superBalance: val('superBalance'),
+        superBalanceBoth: val('superBalanceBoth'),
+        salSac: val('salSac'),
+        salSacBoth: val('salSacBoth')
+    };
+
+    $('loadingOverlay').classList.add('active');
+
+    try {
+        const res = await fetch('/api/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error('Simulation failed');
+        const result = await res.json();
+        const data = result.yearData;
+        const kpis = result.kpis;
+
+        // === RENDER RESULTS ===
+        $('resultsSection').classList.add('visible');
+        const final = data[data.length - 1];
+
+        // KPIs — equity-focused
+        $('kpiPortfolio').textContent = fmtK(kpis.totalPropertyValue);
+        $('kpiEquity').textContent = fmtK(kpis.totalEquity);
+        $('kpiIncome').textContent = fmtK(kpis.passiveIncome);
+        $('kpiProperties').textContent = kpis.propertiesCount;
+
+        // Stage indicator
+        document.querySelectorAll('.stage-pill').forEach(pill => {
+            const s = parseInt(pill.dataset.stage);
+            pill.classList.remove('active', 'passed');
+            if (s === kpis.stageReached) pill.classList.add('active');
+            else if (s < kpis.stageReached) pill.classList.add('passed');
+        });
+
+        // Hidden form fields (may not exist if CTA not yet rendered)
+        const h = id => { const el = $(id); if (el) return el; return { set value(_) {} }; };
+        h('hiddenPropValue').value = val('propertyValue');
+        h('hiddenIncome').value = annualGross;
+        h('hiddenWealth').value = Math.round(kpis.totalEquity);
+        h('hiddenStage').value = 'Stage ' + kpis.stageReached + ' - ' + kpis.stageName;
+        h('hiddenProps').value = kpis.propertiesCount;
+        h('hiddenStructure').value = mode === 'both' ? 'Personal + SMSF' : (mode === 'smsf' ? 'SMSF' : 'Personal');
+
+        // Charts
+        renderWealthChart(data);
+        renderStageChart(data);
+        renderYearTable(data);
+
+        // Scroll to results
+        $('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+        console.error('Simulation error:', err);
+        alert('Something went wrong running the simulation. Please try again.');
+    } finally {
+        $('loadingOverlay').classList.remove('active');
+    }
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+
+function chartOptions(xLabel, yLabel) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { labels: { color: '#94A3B8', font: { size: 11 } } },
+            tooltip: {
+                backgroundColor: '#1E293B',
+                titleColor: '#C9A84C',
+                bodyColor: '#E2E8F0',
+                borderColor: '#334155',
+                borderWidth: 1
+            }
+        },
+        scales: {
+            x: {
+                title: { display: !!xLabel, text: xLabel, color: '#94A3B8' },
+                ticks: { color: '#94A3B8' },
+                grid: { color: 'rgba(148,163,184,0.1)' }
+            },
+            y: {
+                title: { display: !!yLabel, text: yLabel, color: '#94A3B8' },
+                ticks: { callback: v => fmtK(v), color: '#94A3B8' },
+                grid: { color: 'rgba(148,163,184,0.1)' }
+            }
+        }
+    };
+}
+
+function renderWealthChart(data) {
+    if (wealthChart) wealthChart.destroy();
+    wealthChart = new Chart($('wealthChart'), {
+        type: 'line',
+        data: {
+            labels: data.map(d => d.age),
+            datasets: [
+                {
+                    label: 'Total Equity',
+                    data: data.map(d => d.totalEquity),
+                    borderColor: '#C9A84C',
+                    backgroundColor: 'rgba(201,168,76,0.12)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    pointHitRadius: 10
+                },
+                {
+                    label: 'Property Portfolio Value',
+                    data: data.map(d => d.totalPropertyValue),
+                    borderColor: '#8B5CF6',
+                    backgroundColor: 'rgba(139,92,246,0.05)',
+                    fill: true,
+                    borderWidth: 1.5,
+                    tension: 0.3,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Property Equity',
+                    data: data.map(d => d.totalPropertyEquity),
+                    borderColor: '#22C55E',
+                    borderWidth: 1.5,
+                    borderDash: [5, 3],
+                    tension: 0.3,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: chartOptions('Age', 'Value ($)')
+    });
+}
+
+function renderStageChart(data) {
+    if (stageChart) stageChart.destroy();
+    const stageColors = ['#64748B', '#3B82F6', '#8B5CF6', '#C9A84C', '#22C55E'];
+    const thresholds = [
+        { value: 2,  label: '2x — Growth',   color: '#3B82F6' },
+        { value: 5,  label: '5x — Momentum', color: '#8B5CF6' },
+        { value: 8,  label: '8x — Compound', color: '#C9A84C' },
+        { value: 13, label: '13x — Freedom', color: '#22C55E' }
+    ];
+    const len = data.length;
+
+    // Threshold line datasets
+    const thresholdDatasets = thresholds.map(t => ({
+        label: t.label,
+        data: Array(len).fill(t.value),
+        type: 'line',
+        borderColor: t.color,
+        borderWidth: 1.5,
+        borderDash: [6, 4],
+        pointRadius: 0,
+        pointHitRadius: 0,
+        tension: 0,
+        fill: false,
+        order: 0
+    }));
+
+    stageChart = new Chart($('stageChart'), {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.age),
+            datasets: [
+                {
+                    label: 'Equity / Annual Income',
+                    data: data.map(d => d.wealthRatio),
+                    backgroundColor: data.map(d => stageColors[d.stage - 1]),
+                    borderRadius: 3,
+                    barPercentage: 0.9,
+                    order: 1
+                },
+                ...thresholdDatasets
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#94A3B8',
+                        font: { size: 10 },
+                        usePointStyle: true,
+                        pointStyle: 'line',
+                        filter: function(item) {
+                            // Show threshold lines in legend, bar dataset too
+                            return true;
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1E293B',
+                    titleColor: '#C9A84C',
+                    bodyColor: '#E2E8F0',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    filter: function(item) {
+                        // Only show bar tooltip, not threshold lines
+                        return item.datasetIndex === 0;
+                    },
+                    callbacks: {
+                        label: function(ctx) {
+                            const d = data[ctx.dataIndex];
+                            return `${d.wealthRatio.toFixed(1)}x (Stage ${d.stage} - ${STAGE_NAMES[d.stage - 1]})`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { ticks: { color: '#94A3B8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                y: {
+                    ticks: { color: '#94A3B8' },
+                    grid: { color: 'rgba(148,163,184,0.1)' },
+                    title: { display: true, text: 'Equity / Annual Income', color: '#94A3B8' }
+                }
+            }
+        }
+    });
+}
+
+function renderYearTable(data) {
+    const stageColors = ['#64748B', '#3B82F6', '#8B5CF6', '#C9A84C', '#22C55E'];
+
+    let html = '<table class="data-table"><thead><tr>';
+    html += '<th>Age</th><th>Stage</th><th>Total Equity</th><th>Portfolio Value</th><th>Property Equity</th><th>Savings</th><th>Passive Income</th><th>Props</th>';
+    html += '<th style="color:var(--text-dim); opacity:0.5;">Debt</th>';
+    html += '</tr></thead><tbody>';
+
+    let prevStage = 0;
+    for (const d of data) {
+        const sc = stageColors[d.stage - 1];
+        const cls = d.stage !== prevStage && d.year > 0 ? ' class="stage-transition"' : '';
+        html += `<tr${cls}>`;
+        html += `<td>${d.age}</td>`;
+        html += `<td style="color:${sc}; font-weight:700;">${d.stage}</td>`;
+        html += `<td style="color:${sc}; font-weight:600;">${fmtK(d.totalEquity)}</td>`;
+        html += `<td style="color:${sc};">${fmtK(d.totalPropertyValue)}</td>`;
+        html += `<td style="color:${sc};">${fmtK(d.totalPropertyEquity)}</td>`;
+        html += `<td style="color:${sc};">${fmtK(d.personalSavings)}</td>`;
+        html += `<td style="color:${sc};">${fmtK(d.passiveIncome)}</td>`;
+        html += `<td style="color:${sc};">${d.numProps}</td>`;
+        html += `<td style="color:var(--text-dim); opacity:0.4;">${fmtK(d.totalDebt)}</td>`;
+        html += '</tr>';
+        prevStage = d.stage;
+    }
+
+    html += '</tbody></table>';
+    $('yearTable').innerHTML = html;
+}
+
+// ============================================================
+// FORM HANDLING
+// ============================================================
+
+function handleFormSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.querySelector('[name="email"]').value;
+
+    // Gather calculator state
+    const payload = {
+        email: email,
+        propertyValue: $('propValue') ? $('propValue').value : '',
+        householdIncome: $('income') ? $('income').value : '',
+        totalWealth: document.querySelector('.wealth-amount') ? document.querySelector('.wealth-amount').textContent : '',
+        stageReached: document.querySelector('.stage-name') ? document.querySelector('.stage-name').textContent : '',
+        propertiesCount: document.querySelector('.properties-count') ? document.querySelector('.properties-count').textContent : '',
+        structure: document.querySelector('input[name="structure"]:checked') ? document.querySelector('input[name="structure"]:checked').value : ''
+    };
+
+    // Send via serverless proxy (endpoints hidden server-side)
+    fetch('/api/submit-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(() => {});
+
+    // Unlock immediately (don't wait for network)
+    form.style.display = 'none';
+    $('ctaThankYou').style.display = 'block';
+    unlockBothMode();
+}
+</script>
+</body>
+</html>
