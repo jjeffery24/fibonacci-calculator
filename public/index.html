@@ -697,6 +697,12 @@
                         <input type="number" id="salSac" value="5000" min="0" max="30000" step="1000">
                     </div>
                 </div>
+                <div style="margin-top:8px;">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--gold-dark);">
+                        <input type="checkbox" id="div296Enabled" checked style="width:auto;">
+                        Include Division 296 tax (balances &gt; $3M, from 1 July 2026)
+                    </label>
+                </div>
             </div>
 
             <div id="bothFields" style="display:none;">
@@ -739,6 +745,7 @@
             <div class="kpi"><div class="value" id="kpiEquity">-</div><div class="label">Total Equity Built</div></div>
             <div class="kpi"><div class="value" id="kpiIncome">-</div><div class="label">Passive Income / yr</div></div>
             <div class="kpi"><div class="value" id="kpiProperties">-</div><div class="label">Properties Owned</div></div>
+            <div class="kpi" style="display:none;"><div class="value" id="kpiDiv296" style="color:#EF4444;">-</div><div class="label">Div 296 Tax (Lifetime)</div></div>
         </div>
 
         <!-- Wealth Trajectory Chart -->
@@ -914,7 +921,8 @@ async function runModel() {
         superBalance: val('superBalance'),
         superBalanceBoth: val('superBalanceBoth'),
         salSac: val('salSac'),
-        salSacBoth: val('salSacBoth')
+        salSacBoth: val('salSacBoth'),
+        div296Enabled: $('div296Enabled') ? $('div296Enabled').checked : true
     };
 
     $('loadingOverlay').classList.add('active');
@@ -940,6 +948,16 @@ async function runModel() {
         $('kpiEquity').textContent = fmtK(kpis.totalEquity);
         $('kpiIncome').textContent = fmtK(kpis.passiveIncome);
         $('kpiProperties').textContent = kpis.propertiesCount;
+
+        // D296 KPI (only show for SMSF modes)
+        if ($('kpiDiv296')) {
+            if (kpis.div296CumulativeTax > 0) {
+                $('kpiDiv296').textContent = fmtK(kpis.div296CumulativeTax);
+                $('kpiDiv296').parentElement.style.display = '';
+            } else {
+                $('kpiDiv296').parentElement.style.display = 'none';
+            }
+        }
 
         // Stage indicator
         document.querySelectorAll('.stage-pill').forEach(pill => {

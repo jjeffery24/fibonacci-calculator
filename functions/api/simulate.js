@@ -47,7 +47,8 @@ function getTaxOnIncome(gross) {
 function simulateStream(params) {
   const { currentAge, years, propertyPrice, capGrowth, rentalYield,
           loanRate, maxProps, buildMonths, savingsRatePct, startingCash,
-          isSmsf, superBal, salSac, annualGrossStart } = params;
+          isSmsf, superBal, salSac, annualGrossStart,
+          div296Enabled, div296Threshold, div296ThresholdUpper } = params;
 
   const inflation = 0.03;
   const sgRate = 0.12;
@@ -55,6 +56,9 @@ function simulateStream(params) {
   const superReturn = 0.075;
   const propCosts = 0.015;
   const lvr = 0.80;
+  const cpiRate = 0.025;
+  const div296RateLower = 0.15;
+  const div296RateUpper = 0.10;
 
   let annualNet, currentAnnualGross;
   const tax = getTaxOnIncome(annualGrossStart);
@@ -67,6 +71,7 @@ function simulateStream(params) {
   let properties = [];
   let totalLoan = 0;
   let numProps = 0;
+  let cumulativeDiv296Tax = 0;
 
   for (let y = 0; y <= years; y++) {
     const age = currentAge + y;
@@ -121,7 +126,30 @@ function simulateStream(params) {
       }
     }
 
-    if (isSmsf && superCash > 0) superCash *= (1 + superReturn * 0.3);
+    // Super cash return
+    const superCashReturn = isSmsf ? Math.max(0, superCash) * superReturn * 0.3 : 0;
+    if (isSmsf) superCash += superCashReturn;
+
+    // Division 296 (two-tier, CPI-indexed)
+    let div296Tax = 0;
+    if (div296Enabled && isSmsf && y >= 1) {
+      const totalSuperBalance = superCash + totalPropertyValue;
+      const cpiGrowth = Math.pow(1 + cpiRate, y);
+      const d296Lower = (div296Threshold || 3000000) + Math.floor(((div296Threshold || 3000000) * (cpiGrowth - 1)) / 150000) * 150000;
+      const d296Upper = (div296ThresholdUpper || 10000000) + Math.floor(((div296ThresholdUpper || 10000000) * (cpiGrowth - 1)) / 500000) * 500000;
+
+      if (totalSuperBalance > d296Lower) {
+        const d296Earnings = Math.max(0, totalRentalIncome + superCashReturn - totalLoanInterest - propExpenses);
+        const propLower = (totalSuperBalance - d296Lower) / totalSuperBalance;
+        div296Tax += d296Earnings * propLower * div296RateLower;
+        if (totalSuperBalance > d296Upper) {
+          const propUpper = (totalSuperBalance - d296Upper) / totalSuperBalance;
+          div296Tax += d296Earnings * propUpper * div296RateUpper;
+        }
+        superCash -= div296Tax;
+        cumulativeDiv296Tax += div296Tax;
+      }
+    }
 
     // Refinance after build
     for (let p of properties) {
@@ -166,7 +194,8 @@ function simulateStream(params) {
       year: y, age,
       totalPropertyValue, totalPropertyEquity, totalRentalIncome,
       personalSavings, superCash: isSmsf ? superCash : 0,
-      totalAssets, totalDebt, passiveIncome, annualNet, numProps
+      totalAssets, totalDebt, passiveIncome, annualNet, numProps,
+      div296Tax, cumulativeDiv296Tax
     });
   }
   return data;
@@ -191,6 +220,9 @@ export async function onRequestPost(context) {
     const buildMonths = input.buildPeriod || 0;
     const savingsRatePct = (input.savingsRate || 20) / 100;
     const mode = input.structure || 'personal';
+    const div296Enabled = input.div296Enabled !== false; // default on for SMSF
+    const div296Threshold = input.div296Threshold || 3000000;
+    const div296ThresholdUpper = input.div296ThresholdUpper || 10000000;
 
     let data;
 
@@ -199,13 +231,14 @@ export async function onRequestPost(context) {
         currentAge, years, propertyPrice, capGrowth, rentalYield, loanRate,
         maxProps: input.maxPropsPersonal || 3, buildMonths, savingsRatePct,
         startingCash: depositAvail, isSmsf: false, superBal: 0, salSac: 0,
-        annualGrossStart: annualGross
+        annualGrossStart: annualGross, div296Enabled: false, div296Threshold, div296ThresholdUpper
       });
       const smsfData = simulateStream({
         currentAge, years, propertyPrice, capGrowth, rentalYield, loanRate,
         maxProps: input.maxPropsSmsf || 2, buildMonths, savingsRatePct,
         startingCash: 0, isSmsf: true, superBal: input.superBalanceBoth || 0,
-        salSac: input.salSacBoth || 0, annualGrossStart: annualGross
+        salSac: input.salSacBoth || 0, annualGrossStart: annualGross,
+        div296Enabled, div296Threshold, div296ThresholdUpper
       });
 
       data = personalData.map((pd, i) => {
@@ -238,7 +271,9 @@ export async function onRequestPost(context) {
         startingCash: depositAvail, isSmsf,
         superBal: isSmsf ? (input.superBalance || 0) : 0,
         salSac: isSmsf ? (input.salSac || 0) : 0,
-        annualGrossStart: annualGross
+        annualGrossStart: annualGross,
+        div296Enabled: isSmsf ? div296Enabled : false,
+        div296Threshold, div296ThresholdUpper
       });
 
       data = streamData.map(d => {
@@ -265,7 +300,8 @@ export async function onRequestPost(context) {
         passiveIncome: final.passiveIncome,
         propertiesCount: final.numProps,
         stageReached: final.stage,
-        stageName: final.stageName
+        stageName: final.stageName,
+        div296CumulativeTax: final.cumulativeDiv296Tax || 0
       }
     };
 
