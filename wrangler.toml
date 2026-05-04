@@ -3,5 +3,8 @@ compatibility_date = "2024-01-01"
 pages_build_output_dir = "public"
 
 [vars]
-# Secrets set via: wrangler pages secret put GOOGLE_SHEETS_WEBHOOK
-# Secrets set via: wrangler pages secret put WP_LEAD_ENDPOINT
+LISTMONK_BASE_URL = "https://list.healthywealthyinvestor.com.au"
+LISTMONK_LIST_IDS = "24"
+# Secrets set via: wrangler pages secret put LISTMONK_API_USER
+# Secrets set via: wrangler pages secret put LISTMONK_API_TOKEN
+# Fallback only: wrangler pages secret put GOOGLE_SHEETS_WEBHOOK

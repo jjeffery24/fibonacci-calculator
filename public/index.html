@@ -16,8 +16,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wealth Path Calculator — See Your Property Investment Future</title>
-    <meta name="description" content="Free property wealth calculator. Model your 35-year investment trajectory using Fibonacci stage progression. See how property investment builds long-term wealth.">
+    <title>Wealth Path Calculator — Test the Structure Before the Projection</title>
+    <meta name="description" content="Free SMSF property structure test and Wealth Path Calculator. Pressure-test the structure before relying on long-term projection modelling.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         :root {
@@ -121,6 +121,150 @@
             letter-spacing: 1px;
             margin-bottom: 10px;
         }
+        .diagnostic-card {
+            background: var(--card);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 20px;
+        }
+        .diagnostic-card h3 {
+            color: var(--gold);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .diagnostic-card .diagnostic-copy {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.65;
+            margin-bottom: 18px;
+        }
+        .diagnostic-result {
+            display: none;
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: rgba(26, 26, 46, 0.6);
+        }
+        .diagnostic-result.visible { display: block; }
+        .diagnostic-result.ready { border-color: rgba(34,197,94,0.45); }
+        .diagnostic-result.review { border-color: rgba(245,158,11,0.5); }
+        .diagnostic-result.incomplete,
+        .diagnostic-result.binding { border-color: rgba(239,68,68,0.45); }
+        .diagnostic-band {
+            color: var(--gold);
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .diagnostic-score {
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            margin-bottom: 12px;
+        }
+        .diagnostic-flags {
+            list-style: none;
+            margin: 0 0 12px 0;
+            padding: 0;
+        }
+        .diagnostic-flags li {
+            border-top: 1px solid rgba(148,163,184,0.12);
+            color: var(--text-dim);
+            font-size: 0.82rem;
+            padding: 8px 0;
+        }
+        .diagnostic-next {
+            color: var(--text);
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+        .structure-test-btn {
+            justify-content: center;
+            background: rgba(201,168,76,0.08);
+            border-color: var(--gold-dark);
+            color: var(--gold-light);
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            -webkit-text-stroke: 0.35px var(--gold-light);
+            text-shadow: 0 0 10px rgba(232,191,90,0.28);
+        }
+        .structure-test-btn:hover {
+            color: var(--bg);
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(201,168,76,0.32);
+            -webkit-text-stroke: 0;
+            text-shadow: none;
+        }
+        .diagnostic-gate {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(148,163,184,0.16);
+        }
+        .diagnostic-gate h4 {
+            color: var(--gold);
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .diagnostic-gate p {
+            color: var(--text-dim);
+            font-size: 0.84rem;
+            margin-bottom: 12px;
+        }
+        .diagnostic-gate-form {
+            display: flex;
+            gap: 10px;
+        }
+        .diagnostic-gate-form input {
+            flex: 1;
+            padding: 12px 14px;
+            background: var(--bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        .diagnostic-gate-form button {
+            padding: 12px 18px;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        @media (max-width: 600px) {
+            .diagnostic-gate-form { flex-direction: column; }
+        }
+        .wealth-path-section { margin-top: 20px; }
+        .wealth-path-section.locked .model-unlocked { display: none; }
+        .wealth-path-section:not(.locked) .model-lock { display: none; }
+        .model-lock {
+            background: rgba(34,34,58,0.75);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .model-lock h3 {
+            color: var(--gold);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .model-lock p {
+            color: var(--text-dim);
+            max-width: 620px;
+            margin: 0 auto;
+            font-size: 0.9rem;
+        }
 
         /* Stage Indicator */
         .stage-indicator {
@@ -132,6 +276,7 @@
             border-radius: 12px;
             border: 1px solid var(--card-border);
         }
+        .stage-indicator.pending { display: none; }
         .stage-pill {
             flex: 1;
             padding: 10px 6px;
@@ -581,7 +726,7 @@
     <div class="header">
         <img src="logo.png" alt="HWI" class="header-logo">
         <h1>Wealth Path Calculator</h1>
-        <div class="subtitle">See Your Property Investment Future</div>
+        <div class="subtitle">Test the structure before trusting the projection</div>
         <div class="powered-by">Powered by Healthy Wealthy Investor</div>
     </div>
 
@@ -589,12 +734,12 @@
     <div class="explainer">
         <h2>How This Works</h2>
         <p>
-            This calculator models your property wealth trajectory using <strong>Fibonacci stage progression</strong> &mdash; the same mathematical ratios found in nature's most efficient growth systems. Your wealth-to-income ratio determines your stage: from Seed (just starting) through to Freedom (passive income replaces employment). Each stage compounds faster than the last. Enter your numbers below and see the path forward.
+            Start with the structure test. It checks whether an SMSF property idea has enough liquidity, review, policy clarity, and timing support before you rely on a long-term projection. If the structure looks coherent, use the Wealth Path model below as education, not as a promise or personal recommendation.
         </p>
     </div>
 
     <!-- Stage Indicator -->
-    <div class="stage-indicator" id="stageIndicator">
+    <div class="stage-indicator pending" id="stageIndicator">
         <div class="stage-pill" data-stage="1"><span class="multiplier">&times;1</span>Stage 1<span class="stage-name">Seed</span></div>
         <div class="stage-pill" data-stage="2"><span class="multiplier">&times;3</span>Stage 2<span class="stage-name">Growth</span></div>
         <div class="stage-pill" data-stage="3"><span class="multiplier">&times;5</span>Stage 3<span class="stage-name">Momentum</span></div>
@@ -602,9 +747,105 @@
         <div class="stage-pill" data-stage="5"><span class="multiplier">&times;13</span>Stage 5<span class="stage-name">Freedom</span></div>
     </div>
 
+    <!-- Structure Test -->
+    <div class="diagnostic-card" id="structureTest">
+        <h3>SMSF Property Structure Test</h3>
+        <p class="diagnostic-copy">
+            A good-looking property projection can still fail if the structure is weak. This test does not tell you what to buy. It flags whether the idea needs more review before the numbers deserve your trust.
+        </p>
+        <div class="input-row">
+            <div class="input-group">
+                <label>What are you testing?</label>
+                <select id="dealStatus">
+                    <option value="research">General research</option>
+                    <option value="live">A live property or package</option>
+                    <option value="pitched">Something already pitched to me</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>SMSF status</label>
+                <select id="smsfStatus">
+                    <option value="none">No SMSF yet</option>
+                    <option value="setup">Setting one up</option>
+                    <option value="existing">Existing SMSF</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Property type</label>
+                <select id="propertyType">
+                    <option value="undecided">Undecided</option>
+                    <option value="existing">Existing property</option>
+                    <option value="newbuild">New build</option>
+                    <option value="offplan">Off the plan</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Adviser review status</label>
+                <select id="adviserStatus">
+                    <option value="none">Not reviewed yet</option>
+                    <option value="partial">Some review started</option>
+                    <option value="full">Accountant, legal/SMSF and credit review involved</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Contract or deal reviewed?</label>
+                <select id="contractStatus">
+                    <option value="na">No live contract</option>
+                    <option value="no">Not yet</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Lender policy confirmed?</label>
+                <select id="lenderStatus">
+                    <option value="no">Not yet</option>
+                    <option value="prelim">Preliminary check</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </div>
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Cash buffer after deposit and costs ($)</label>
+                <input type="number" id="postBuffer" value="75000" min="0" step="5000">
+            </div>
+            <div class="input-group">
+                <label>Years until pension/drawdown pressure</label>
+                <input type="number" id="pensionYears" value="15" min="0" max="40" step="1">
+            </div>
+        </div>
+        <button type="button" class="advanced-toggle-btn structure-test-btn" onclick="runStructureTest()">
+            Run Structure Test
+        </button>
+        <div class="diagnostic-result" id="diagnosticResult">
+            <div class="diagnostic-band" id="diagnosticBand"></div>
+            <div class="diagnostic-score" id="diagnosticScore"></div>
+            <ul class="diagnostic-flags" id="diagnosticFlags"></ul>
+            <div class="diagnostic-next" id="diagnosticNext"></div>
+            <div class="diagnostic-gate" id="diagnosticGate">
+                <h4>Unlock the Wealth Path model</h4>
+                <p>Enter your email to unlock the projection layer. The structure result stays visible either way.</p>
+                <form class="diagnostic-gate-form" onsubmit="handleStructureGateSubmit(event)">
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                    <button type="submit">Unlock Projection</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Input Section -->
+    <div class="wealth-path-section locked" id="wealthPathSection">
+    <div class="model-lock" id="modelLock">
+        <h3>Step 2 - Wealth Path Projection</h3>
+        <p>Run the structure test first. The projection model opens after you have seen the structure result, because the numbers should never lead the decision.</p>
+    </div>
+    <div class="model-unlocked">
     <div class="card">
-        <h3>Your Details</h3>
+        <h3>Wealth Path Model</h3>
 
         <!-- Core Inputs (always visible) -->
         <div class="input-row">
@@ -735,6 +976,8 @@
 
     <!-- Calculate Button -->
     <button class="btn-primary" onclick="runModel()">CALCULATE MY WEALTH PATH</button>
+    </div>
+    </div>
 
     <!-- Results Section (shown after calculation) -->
     <div id="resultsSection">
@@ -845,6 +1088,141 @@ function fmtK(n) {
     return '$' + Math.round(n / 1000).toLocaleString() + 'K';
 }
 
+function selectVal(id) {
+    const el = $(id);
+    return el ? el.value : '';
+}
+
+function addDiagnosticFlag(flags, label, detail, severity) {
+    flags.push({ label, detail, severity: severity || 'review' });
+}
+
+function runStructureTest(options) {
+    const silent = options && options.silent;
+    const dealStatus = selectVal('dealStatus');
+    const smsfStatus = selectVal('smsfStatus');
+    const propertyType = selectVal('propertyType');
+    const adviserStatus = selectVal('adviserStatus');
+    const contractStatus = selectVal('contractStatus');
+    const lenderStatus = selectVal('lenderStatus');
+    const postBuffer = val('postBuffer');
+    const pensionYears = val('pensionYears');
+    const growthRate = val('growthRate');
+    const rentalYield = val('rentalYield');
+
+    let score = 100;
+    const flags = [];
+
+    if (dealStatus === 'pitched') {
+        score -= 6;
+        addDiagnosticFlag(flags, 'Sales pressure context', 'A pitched opportunity should be separated from the structure review before the numbers are trusted.');
+    }
+    if (dealStatus === 'live' && contractStatus !== 'yes') {
+        score -= 10;
+        addDiagnosticFlag(flags, 'Live deal without completed review', 'A live property or package needs contract, trustee, borrowing and adviser-lane review before relying on the projection.');
+    }
+    if (smsfStatus === 'none') {
+        score -= 18;
+        addDiagnosticFlag(flags, 'SMSF not established', 'The structure is still conceptual until trustee, fund, deed, borrowing and adviser roles are confirmed.', 'incomplete');
+    } else if (smsfStatus === 'setup') {
+        score -= 8;
+        addDiagnosticFlag(flags, 'SMSF setup in progress', 'Setup timing, trustee sequence and borrowing readiness still need confirmation.');
+    }
+    if (propertyType === 'offplan') {
+        score -= 8;
+        addDiagnosticFlag(flags, 'Off-the-plan timing risk', 'Settlement, valuation, lender policy and fund liquidity can move between contract and completion.');
+    } else if (propertyType === 'newbuild') {
+        score -= 5;
+        addDiagnosticFlag(flags, 'Build-period friction', 'New-build timing needs explicit buffer for delays, vacancy and valuation/policy changes.');
+    } else if (propertyType === 'undecided') {
+        score -= 4;
+        addDiagnosticFlag(flags, 'Property not yet defined', 'Use the model for education, but do not treat the output as strategy until the asset and structure are known.');
+    }
+    if (adviserStatus === 'none') {
+        score -= 18;
+        addDiagnosticFlag(flags, 'Adviser lanes missing', 'SMSF property needs clean boundaries across credit, tax/accounting, legal/SMSF and financial advice.', 'incomplete');
+    } else if (adviserStatus === 'partial') {
+        score -= 8;
+        addDiagnosticFlag(flags, 'Partial review only', 'One adviser lane cannot validate the whole SMSF property structure.');
+    }
+    if (contractStatus === 'no') {
+        score -= 10;
+        addDiagnosticFlag(flags, 'Contract not reviewed', 'The deal is not the structure. Contract terms can change borrowing, liquidity and exit risk.');
+    }
+    if (lenderStatus === 'no') {
+        score -= 12;
+        addDiagnosticFlag(flags, 'Lender policy not confirmed', 'Possible does not mean fundable. Policy should be checked before trusting growth assumptions.');
+    } else if (lenderStatus === 'prelim') {
+        score -= 5;
+        addDiagnosticFlag(flags, 'Preliminary policy check only', 'The next step is a deeper credit and structure review, not reliance on a generic projection.');
+    }
+    if (postBuffer < 50000) {
+        score -= 18;
+        addDiagnosticFlag(flags, 'Liquidity buffer is thin', 'A low post-purchase buffer can make ordinary friction feel like a structural failure.', 'binding');
+    } else if (postBuffer < 100000) {
+        score -= 8;
+        addDiagnosticFlag(flags, 'Liquidity buffer needs stress testing', 'Rate rises, vacancy, repairs and admin costs should be tested before moving forward.');
+    }
+    if (pensionYears <= 5) {
+        score -= 14;
+        addDiagnosticFlag(flags, 'Pension timing is close', 'Drawdown timing can become the binding constraint even when the property projection looks attractive.', 'binding');
+    } else if (pensionYears <= 10) {
+        score -= 6;
+        addDiagnosticFlag(flags, 'Pension timing needs modelling', 'The structure should be tested against liquidity and exit options before relying on long-term growth.');
+    }
+    if (growthRate > 7 || rentalYield > 6.5) {
+        score -= 10;
+        addDiagnosticFlag(flags, 'Numbers are assumption-sensitive', 'High growth or yield assumptions should not carry the decision. Stress the structure first.');
+    }
+
+    score = Math.max(0, Math.min(100, score));
+
+    let band = 'Structure is ready for a deeper credit/suitability review';
+    let state = 'ready';
+    let next = 'Now model the scenario below as education. If there is a live borrowing, fund or property question, bring the structure test and projection to a discovery call.';
+
+    if (flags.some(f => f.severity === 'binding')) {
+        band = 'Liquidity/pension timing is the binding concern';
+        state = 'binding';
+        next = 'Do not let the projection lead the decision. Resolve the liquidity or pension-timing constraint before relying on long-range modelling.';
+    } else if (growthRate > 7 || rentalYield > 6.5) {
+        band = 'Numbers are too assumption-dependent';
+        state = 'review';
+        next = 'Reduce reliance on growth and yield assumptions. Use the model as a sensitivity check, then review the structure with conservative inputs.';
+    } else if (score < 55 || flags.some(f => f.severity === 'incomplete')) {
+        band = 'Structure appears incomplete';
+        state = 'incomplete';
+        next = 'Use the Wealth Path model for education only. Before acting, clarify the SMSF setup, adviser lanes, lender policy and review sequence.';
+    } else if (score < 80) {
+        band = 'Structure needs specialist review';
+        state = 'review';
+        next = 'The idea may be workable, but there are enough flags that a specialist structure review should come before relying on the projection.';
+    }
+
+    const result = { score, band, state, next, flags };
+
+    if (!silent) renderStructureTest(result);
+    return result;
+}
+
+function renderStructureTest(result) {
+    const box = $('diagnosticResult');
+    $('diagnosticBand').textContent = result.band;
+    $('diagnosticScore').textContent = 'Structure confidence: ' + result.score + '/100. This is a triage score, not personal advice.';
+
+    const visibleFlags = result.flags.length ? result.flags : [
+        { label: 'No major structure flags from this first pass', detail: 'Keep using conservative assumptions and confirm the adviser lanes before taking action.' }
+    ];
+
+    $('diagnosticFlags').innerHTML = visibleFlags.map(flag => (
+        '<li><strong>' + flag.label + ':</strong> ' + flag.detail + '</li>'
+    )).join('');
+    $('diagnosticNext').textContent = result.next;
+
+    box.className = 'diagnostic-result visible ' + result.state;
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 // Toggle functions
 function toggleAdvanced() {
     const btn = $('advancedBtn');
@@ -896,6 +1274,45 @@ function unlockBothMode() {
     $('bothHint').innerHTML = '<span style="color:var(--green);">Combined modelling unlocked. Select "Both" to model Personal + SMSF together.</span>';
 }
 
+function unlockWealthPathModel() {
+    const section = $('wealthPathSection');
+    if (section) section.classList.remove('locked');
+    const stage = $('stageIndicator');
+    if (stage) stage.classList.remove('pending');
+}
+
+function buildLeadPayload(email, source) {
+    return {
+        email: email,
+        source: source || 'structure-test',
+        propertyValue: $('propertyValue') ? $('propertyValue').value : '',
+        householdIncome: $('householdIncome') ? $('householdIncome').value : '',
+        totalWealth: $('kpiEquity') ? $('kpiEquity').textContent : '',
+        stageReached: $('diagnosticBand') ? $('diagnosticBand').textContent : '',
+        propertiesCount: $('kpiProperties') ? $('kpiProperties').textContent : '',
+        structure: document.querySelector('input[name="structure"]:checked') ? document.querySelector('input[name="structure"]:checked').value : '',
+        structureTest: runStructureTest({ silent: true })
+    };
+}
+
+function submitLead(payload) {
+    fetch('/api/submit-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).catch(() => {});
+}
+
+function handleStructureGateSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.querySelector('[name="email"]').value;
+    submitLead(buildLeadPayload(email, 'structure-test-unlock'));
+    form.innerHTML = '<div style="width:100%; color:var(--green); font-weight:700;">Projection unlocked. Use conservative assumptions below.</div>';
+    unlockWealthPathModel();
+    $('wealthPathSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 // ============================================================
 // SIMULATION — calls serverless function
 // ============================================================
@@ -903,6 +1320,9 @@ function unlockBothMode() {
 async function runModel() {
     const mode = getStructure();
     const annualGross = val('householdIncome');
+    const structureTest = runStructureTest({ silent: true });
+    renderStructureTest(structureTest);
+    unlockWealthPathModel();
 
     const payload = {
         currentAge: val('currentAge'),
@@ -1196,23 +1616,7 @@ function handleFormSubmit(e) {
     const form = e.target;
     const email = form.querySelector('[name="email"]').value;
 
-    // Gather calculator state
-    const payload = {
-        email: email,
-        propertyValue: $('propValue') ? $('propValue').value : '',
-        householdIncome: $('income') ? $('income').value : '',
-        totalWealth: document.querySelector('.wealth-amount') ? document.querySelector('.wealth-amount').textContent : '',
-        stageReached: document.querySelector('.stage-name') ? document.querySelector('.stage-name').textContent : '',
-        propertiesCount: document.querySelector('.properties-count') ? document.querySelector('.properties-count').textContent : '',
-        structure: document.querySelector('input[name="structure"]:checked') ? document.querySelector('input[name="structure"]:checked').value : ''
-    };
-
-    // Send via serverless proxy (endpoints hidden server-side)
-    fetch('/api/submit-lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    }).catch(() => {});
+    submitLead(buildLeadPayload(email, 'wealth-path-followup'));
 
     // Unlock immediately (don't wait for network)
     form.style.display = 'none';

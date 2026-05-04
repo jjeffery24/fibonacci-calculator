@@ -1,49 +1,63 @@
 # Fibonacci Wealth Calculator — Project Index
 
 ## Overview
-Property wealth trajectory calculator using Fibonacci stage progression. Deployed on Netlify (calculator) + GitHub Pages (static mirror). Lead capture forwards to Google Sheets + WordPress.
+Property wealth trajectory calculator using Fibonacci stage progression, now fronted by an SMSF property structure test for the Structure Beats Prediction book funnel. Deployed on Cloudflare Pages.
 
-**Live:** https://hwi-wealth-calculator.netlify.app
+**Live:** https://hwi-wealth-calculator.pages.dev
 
 ## Architecture
 
 ```
 Browser (index.html)
   ├── UI: form inputs, Chart.js visualisation, stage pills
-  ├── POST /.netlify/functions/simulate  → returns yearData + KPIs
-  └── POST /.netlify/functions/submit-lead → proxies to Google Sheets + WP
+  ├── Structure Test → ungated result
+  ├── Email unlock → POST /api/submit-lead
+  ├── POST /api/simulate → returns yearData + KPIs
+  └── Lead capture → Listmonk primary, Google Sheets fallback
 ```
 
-All proprietary logic (simulation engine, tax calculations, Fibonacci multipliers, stage thresholds) is server-side in Netlify Functions. Client source contains only UI wiring.
+All proprietary simulation logic is server-side in Cloudflare Pages Functions. Client source contains UI wiring and the public lightweight structure-test triage.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Single-page app — form, chart, results display. No proprietary logic. |
-| `logo.png` | HWI brand mark |
-| `netlify.toml` | Build config, function routing, redirect rules (blocks `/netlify/functions/*`), CORS headers |
-| `netlify/functions/simulate.js` | **Proprietary engine** — `simulateStream()`, `getStage()`, `getTaxOnIncome()`, FIB_MULTIPLIERS, dual-stream merge. CORS-locked to allowed origins. |
-| `netlify/functions/submit-lead.js` | Lead proxy — forwards email capture to Google Sheets (env: `GOOGLE_SHEETS_WEBHOOK`) and WordPress (env: `WP_LEAD_ENDPOINT`). CORS-locked. |
-| `.github/workflows/gh-pages.yml` | Deploys only `index.html` + `logo.png` to GitHub Pages (no function source) |
+| `public/index.html` | Cloudflare Pages frontend: structure test, email unlock, projection UI, chart, results display. |
+| `public/logo.png` | HWI brand mark |
+| `wrangler.toml` | Cloudflare Pages project config and non-secret vars |
+| `functions/api/simulate.js` | **Proprietary engine** — `simulateStream()`, `getStage()`, `getTaxOnIncome()`, stage thresholds, D296 support. CORS-locked to allowed origins. |
+| `functions/api/submit-lead.js` | Lead proxy — forwards email capture to Listmonk primary and Google Sheets fallback. CORS-locked. |
 | `.gitignore` | Excludes `.netlify/` local build artefacts |
 
-## Environment Variables (Netlify Dashboard)
+## Environment Variables / Secrets (Cloudflare Pages)
 
 | Variable | Purpose |
 |----------|---------|
-| `GOOGLE_SHEETS_WEBHOOK` | Google Apps Script URL for lead spreadsheet |
-| `WP_LEAD_ENDPOINT` | WordPress REST endpoint (`hwi/v1/lead`) |
+| `LISTMONK_BASE_URL` | Public Listmonk base URL, currently `https://list.healthywealthyinvestor.com.au` |
+| `LISTMONK_LIST_IDS` | Primary lead list IDs, currently `24` |
+| `LISTMONK_API_USER` | Secret: Listmonk API user |
+| `LISTMONK_API_TOKEN` | Secret: Listmonk API token |
+| `GOOGLE_SHEETS_WEBHOOK` | Secret fallback only: Google Apps Script URL for lead spreadsheet |
 | `ALLOWED_ORIGINS` | (hardcoded in function source — not env var) |
+
+Primary lead storage:
+
+- Listmonk list ID `24`: `HWI Structure Test - Wealth Path Calculator`
+
+Deployment note:
+
+- Cloudflare OAuth was refreshed via Wrangler on 4 May 2026.
+- Production secrets uploaded: `LISTMONK_API_USER`, `LISTMONK_API_TOKEN`.
+- `GOOGLE_SHEETS_WEBHOOK` was not present in the local env, so the fallback is not currently uploaded.
+- Latest Pages deployment: `https://8e4b820f.hwi-wealth-calculator.pages.dev`, promoted to `https://hwi-wealth-calculator.pages.dev`.
 
 ## Security Hardening (completed 5 Mar 2026)
 
 ### What's Protected
-- **Proprietary logic** — All calculations server-side (Netlify Functions)
-- **Secrets** — Webhook URLs in env vars, not source
-- **Source files** — Redirect rule blocks direct access to `/netlify/functions/*`
-- **CORS** — Strict origin whitelist in function code (overrides netlify.toml wildcard)
-- **GitHub Pages** — Only `index.html` + `logo.png` deployed via Actions workflow
+- **Proprietary logic** — All calculations server-side in Cloudflare Pages Functions
+- **Secrets** — Listmonk credentials in Cloudflare Pages secrets, not source
+- **Lead capture** — Listmonk is primary; Google Sheets is fallback only if configured
+- **CORS** — Strict origin whitelist in function code
 - **Anti-inspection** — Copyright comment, right-click guard, selection guard, console warning
 
 ### Security Audit Results (5 Mar 2026)
